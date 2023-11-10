@@ -6,6 +6,8 @@ import (
 	"github.com/xuri/excelize/v2"
 	"os"
 	"path"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -40,86 +42,182 @@ var (
 	DefaultExcelFileName = time.Now().Format("20060102150405.xlsx")
 )
 
-func (e *Excel) Export() (f *excelize.File, err error) {
-	f = excelize.NewFile()
-	for _, sheet := range e.Sheets {
-		var sheetName = DefaultSheetName
-		if withTitle, ok := sheet.(WithTitle); ok {
-			sheetName = withTitle.Title()
-			if err = f.SetSheetName(DefaultSheetName, sheetName); err != nil {
-				return
-			}
-		}
-
-		// 设置默认列宽
-		if e.DefaultColWidth == 0 {
-			e.DefaultColWidth = DefaultColWidth
-		}
-		// 设置默认行高
-		if e.DefaultRowHeight == 0 {
-			e.DefaultRowHeight = DefaultRowHeight
-		}
-
-		if heading, ok := sheet.(WithHeading); ok {
-			// 获取有效的最后一列的列名
-			// 获取列对应的列名
-			tableHeader := heading.Header()
-			//_, err = excelize.ColumnNumberToName(len(tableHeader))
-			//if err != nil {
-			//	err = errors.New(fmt.Sprintf("获取第%d列对应的列名失败：%s", len(tableHeader), err.Error()))
-			//	return
-			//}
-
-			// 设置表头
-			if err = f.SetSheetRow(sheetName, "A1", &tableHeader); err != nil {
-				err = errors.New(fmt.Sprintf("设置表头失败：%s", err.Error()))
-				return
-			}
-		}
-
-		var ok = true
-		err = f.SetSheetProps(sheetName, &excelize.SheetPropsOptions{
-			// 设置默认列宽
-			DefaultColWidth: &e.DefaultColWidth,
-			// 设置默认行高
-			DefaultRowHeight: &e.DefaultRowHeight,
-			CustomHeight:     &ok, // 是否自定义行高
-		})
+// Export Excel导出
+func (e *Excel) Export() error {
+	e.f = excelize.NewFile()
+	for i, sheet := range e.Sheets {
+		s, err := e.newSheet(sheet, i+1)
 		if err != nil {
-			return
+			return err
 		}
-
-		if withColumn, ok := sheet.(WithColumnWidth); ok {
-			for c, w := range withColumn.ColumnWidth() {
-				err = f.SetColWidth(sheetName, c, c, w)
-				if err != nil {
-					return
-				}
-			}
+		// 设置默认列宽
+		if err = e.setSheetColumnWidth(s); err != nil {
+			return err
 		}
-
-		if withStyle, ok := sheet.(WithStyle); ok {
-			// 设置格式
-			if err = withStyle.Style(f); err != nil {
-				return
-			}
+		// 设置样式
+		if err = e.setSheetStyle(s); err != nil {
+			return err
 		}
-
-		if collection, ok := sheet.(FormCollection); ok {
-			dimension, _ := f.GetRows(sheetName)
-			for i, item := range collection.Collection() {
-				// 获取行号
-				row := i + 1 + len(dimension)
-				fmt.Println(item)
-				if err = f.SetSheetRow(sheetName, fmt.Sprintf("A%d", row), &item); err != nil {
-					return
-				}
-			}
+		// 设置表头
+		if err = e.setSheetHeader(s); err != nil {
+			return err
 		}
-
+		// 设置数据
+		if err = e.setSheetData(s); err != nil {
+			return err
+		}
 	}
-	e.f = f
+	return nil
+}
+
+// newSheet 创建工作表
+func (e *Excel) newSheet(s interface{}, i int) (s1 Sheet, err error) {
+	s1 = e.getDefaultSheet(s, i)
+
+	fmt.Printf("%#v", s)
+
+	if _, ok := s.(WithTitle); ok {
+		fmt.Println(s.(WithTitle).Title())
+		s1.Name = s.(WithTitle).Title()
+	}
+
+	if _, ok := s.(withHeading); ok {
+		fmt.Println(s.(withHeading).Header())
+		s1.headers = s.(withHeading).Header()
+	}
+
+	if _, ok := s.(withColumnWidth); ok {
+		fmt.Println(s.(withColumnWidth).ColumnWidth())
+		s1.customWith = s.(withColumnWidth).ColumnWidth()
+	}
+
+	if _, ok := s.(withStyle); ok {
+		s1.styleHandle = s.(withStyle).Style()
+	}
+
+	if _, ok := s.(formCollection); ok {
+		fmt.Println(s.(formCollection).Collection())
+		s1.rows = s.(formCollection).Collection()
+	}
+
+	if err = e.f.SetSheetName(DefaultSheetName, s1.Name); err != nil {
+		err = errors.New(fmt.Sprintf("设置工作表失败：%s", err.Error()))
+		return
+	}
+
+	var spo = excelize.SheetPropsOptions{
+		DefaultRowHeight: &s1.DefaultRowHeight,
+		CustomHeight:     &s1.IsCustomHigh,
+	}
+
+	if s1.customWith == nil {
+		spo.DefaultColWidth = &s1.DefaultColWidth
+	}
+
+	if err = e.f.SetSheetProps(s1.Name, &spo); err != nil {
+		return
+	}
+
 	return
+}
+
+// getDefaultSheet 获取默认的工作表
+func (e *Excel) getDefaultSheet(s interface{}, i int) Sheet {
+	var s1 Sheet
+	if _, ok := s.(Sheet); ok {
+		s1 = s.(Sheet)
+	}
+
+	if s1.Name == "" {
+		s1.Name = strings.ReplaceAll(DefaultSheetName, "1", strconv.Itoa(i))
+	}
+
+	if s1.DefaultFontFamily == "" {
+		s1.DefaultFontFamily = DefaultFontFamily
+		if e.DefaultFontFamily != "" {
+			s1.DefaultFontFamily = e.DefaultFontFamily
+		}
+	}
+
+	s1.DefaultFontSize = DefaultFontSize
+	if e.DefaultFontSize != 0 {
+		s1.DefaultFontSize = e.DefaultFontSize
+	}
+
+	s1.DefaultColWidth = DefaultColWidth
+	if e.DefaultColWidth != 0 {
+		s1.DefaultColWidth = e.DefaultColWidth
+	}
+
+	s1.DefaultRowHeight = DefaultRowHeight
+	if e.DefaultRowHeight != 0 {
+		s1.DefaultRowHeight = e.DefaultRowHeight
+	}
+
+	s1.DefaultHorizontalAlign = DefaultHorizontalAlign
+	if e.DefaultHorizontalAlign != "" {
+		s1.DefaultHorizontalAlign = e.DefaultHorizontalAlign
+	}
+
+	s1.DefaultVerticalAlign = DefaultVerticalAlign
+	if e.DefaultVerticalAlign != "" {
+		s1.DefaultVerticalAlign = e.DefaultVerticalAlign
+	}
+
+	s1.IsCustomHigh = false
+	return s1
+}
+
+// setSheetColumnWidth 设置列宽
+func (e *Excel) setSheetColumnWidth(s Sheet) error {
+	if s.customWith == nil {
+		return nil
+	}
+
+	for col, w := range s.customWith {
+		e.f.SetColWidth(s.Name, col, col, w)
+	}
+	return nil
+}
+
+// setSheetStyle 设置样式
+func (e *Excel) setSheetStyle(s Sheet) error {
+	if s.styleHandle == nil {
+		return nil
+	}
+	return s.styleHandle(e.f)
+}
+
+// setSheetHeader 设置表头
+func (e *Excel) setSheetHeader(s Sheet) error {
+	if len(s.headers) == 0 {
+		return nil
+	}
+
+	if err := e.f.SetSheetRow(s.Name, "A1", &s.headers); err != nil {
+		return errors.New(fmt.Sprintf("设置表头失败：%s", err.Error()))
+	}
+	return nil
+}
+
+// setSheetRow 设置行数据
+func (e *Excel) setSheetData(s Sheet) error {
+	if len(s.rows) == 0 {
+		return nil
+	}
+
+	start := 0
+	if s.headers != nil {
+		start = 2
+	}
+
+	for i, row := range s.rows {
+		rowI := fmt.Sprintf("%s%d", "A", i+start)
+		if err := e.f.SetSheetRow(s.Name, rowI, &row); err != nil {
+			return errors.New(fmt.Sprintf("设置行数据失败：%s", err.Error()))
+		}
+	}
+	return nil
 }
 
 func (e *Excel) ExportFile(filePath string) (err error) {
@@ -138,20 +236,20 @@ func (e *Excel) ExportFile(filePath string) (err error) {
 		}
 	}
 	// 根据指定路径保存文件
-	if e.FileName == "" {
-		e.FileName = DefaultExcelFileName
+	if e.Name == "" {
+		e.Name = DefaultExcelFileName
 	} else {
 		// 扩展名
-		ext := path.Ext(e.FileName)
+		ext := path.Ext(e.Name)
 		if ext == "" {
-			e.FileName += ExcelExt
+			e.Name += ExcelExt
 		} else if ext != ExcelExt {
 			err = errors.New("错误的文件扩展名：" + ext)
 			return
 		}
 	}
 	// 导出文件
-	err = e.f.SaveAs(path.Join(filePath, e.FileName))
+	err = e.f.SaveAs(path.Join(filePath, e.Name))
 	return
 }
 
