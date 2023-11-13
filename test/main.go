@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	exstyle "github.com/starme/go-excel/style"
 	extemplate "github.com/starme/go-excel/template"
 	"github.com/xuri/excelize/v2"
 	"time"
@@ -52,22 +53,21 @@ func (s Sheet1) ColumnWidth() map[string]float64 {
 }
 
 func (s Sheet1) Style() extemplate.HandleSheetStyle {
-	return func(f *excelize.File) error {
-		style, err := f.NewStyle(&excelize.Style{
-			Alignment: &excelize.Alignment{
-				Horizontal: "center",
-			},
-			Font: &excelize.Font{
-				Bold: true,
-			},
-		})
-		if err != nil {
-			return err
-		}
-		err = f.SetCellStyle(s.Name, "A1", "F1", style)
-		if err != nil {
-			return err
-		}
+	return func(f *excelize.File, style *exstyle.Style) error {
+		//style.SetFont(
+		//	exstyle.Bold(),
+		//)
+		//
+		//style.SetAlign(
+		//	exstyle.Horizontal("center"),
+		//	exstyle.Vertical("center"),
+		//	exstyle.WrapText(),
+		//)
+		//
+		//err := style.ApplyStyle(f, s.Name, "A1", fmt.Sprintf("F%d", len(s.Collection())+1))
+		//if err != nil {
+		//	return err
+		//}
 		return nil
 	}
 }

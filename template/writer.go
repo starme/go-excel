@@ -3,6 +3,7 @@ package extemplate
 import (
 	"errors"
 	"fmt"
+	exstyle "github.com/starme/go-excel/style"
 	"github.com/xuri/excelize/v2"
 	"os"
 	"path"
@@ -18,14 +19,6 @@ const (
 	DefaultColWidth = 25.00
 	// DefaultRowHeight 默认行高
 	DefaultRowHeight = 20.00
-	// DefaultFontFamily 默认字体
-	DefaultFontFamily = "宋体"
-	// DefaultFontSize 默认字号
-	DefaultFontSize = 20.00
-	// DefaultHorizontalAlign 默认水平对齐方式
-	DefaultHorizontalAlign = "center"
-	// DefaultVerticalAlign 默认垂直对齐方式
-	DefaultVerticalAlign = "center"
 )
 
 const (
@@ -132,18 +125,6 @@ func (e *Excel) getDefaultSheet(s interface{}, i int) Sheet {
 		s1.Name = strings.ReplaceAll(DefaultSheetName, "1", strconv.Itoa(i))
 	}
 
-	if s1.DefaultFontFamily == "" {
-		s1.DefaultFontFamily = DefaultFontFamily
-		if e.DefaultFontFamily != "" {
-			s1.DefaultFontFamily = e.DefaultFontFamily
-		}
-	}
-
-	s1.DefaultFontSize = DefaultFontSize
-	if e.DefaultFontSize != 0 {
-		s1.DefaultFontSize = e.DefaultFontSize
-	}
-
 	s1.DefaultColWidth = DefaultColWidth
 	if e.DefaultColWidth != 0 {
 		s1.DefaultColWidth = e.DefaultColWidth
@@ -153,17 +134,6 @@ func (e *Excel) getDefaultSheet(s interface{}, i int) Sheet {
 	if e.DefaultRowHeight != 0 {
 		s1.DefaultRowHeight = e.DefaultRowHeight
 	}
-
-	s1.DefaultHorizontalAlign = DefaultHorizontalAlign
-	if e.DefaultHorizontalAlign != "" {
-		s1.DefaultHorizontalAlign = e.DefaultHorizontalAlign
-	}
-
-	s1.DefaultVerticalAlign = DefaultVerticalAlign
-	if e.DefaultVerticalAlign != "" {
-		s1.DefaultVerticalAlign = e.DefaultVerticalAlign
-	}
-
 	s1.IsCustomHigh = false
 	return s1
 }
@@ -185,7 +155,7 @@ func (e *Excel) setSheetStyle(s Sheet) error {
 	if s.styleHandle == nil {
 		return nil
 	}
-	return s.styleHandle(e.f)
+	return s.styleHandle(e.f, &exstyle.Style{})
 }
 
 // setSheetHeader 设置表头
