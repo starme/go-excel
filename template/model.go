@@ -31,7 +31,7 @@ type ExcelTag struct {
 }
 
 type Sheet struct {
-	Index int    // 工作表索引
+	index int    // 工作表索引
 	Name  string // 工作表名称
 
 	DefaultColWidth  float64 // 默认列宽
@@ -45,11 +45,6 @@ type Sheet struct {
 	customWith map[string]float64 // 自定义列宽
 
 	styleHandle HandleSheetStyle // 工作表样式
-}
-
-// withHeading 表头
-type withHeading interface {
-	Header() []string
 }
 
 // withTitle 工作表标题
@@ -67,7 +62,16 @@ type withColumnWidth interface {
 	ColumnWidth() map[string]float64
 }
 
-// formCollection 表单数据
+type withMergeCell interface {
+	MergeCell() map[string]string
+}
+
+// withHeading 表头
+type withHeading interface {
+	Header() []string
+}
+
+// formCollection 表数据
 type formCollection interface {
 	Collection() [][]string
 }

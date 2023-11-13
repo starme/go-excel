@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	exstyle "github.com/starme/go-excel/style"
 	extemplate "github.com/starme/go-excel/template"
-	"github.com/xuri/excelize/v2"
 	"time"
 )
 
@@ -31,67 +29,72 @@ type User struct {
 	Sex      string `json:"sex" ex:"column:性别"`
 }
 
-type Sheet1 extemplate.Sheet
+//type Sheet1 extemplate.Sheet
 
-func (s Sheet1) Header() []string {
-	return []string{"ID", "姓名", "昵称", "手机号", "年龄", "性别"}
-}
-
-func (s Sheet1) Title() string {
-	return "车辆导入模板"
-}
-
-func (s Sheet1) ColumnWidth() map[string]float64 {
-	return map[string]float64{
-		"A": 10,
-		"B": 20,
-		"C": 30,
-		"D": 40,
-		"E": 50,
-		"F": 60,
-	}
-}
-
-func (s Sheet1) Style() extemplate.HandleSheetStyle {
-	return func(f *excelize.File, style *exstyle.Style) error {
-		//style.SetFont(
-		//	exstyle.Bold(),
-		//)
-		//
-		//style.SetAlign(
-		//	exstyle.Horizontal("center"),
-		//	exstyle.Vertical("center"),
-		//	exstyle.WrapText(),
-		//)
-		//
-		//err := style.ApplyStyle(f, s.Name, "A1", fmt.Sprintf("F%d", len(s.Collection())+1))
-		//if err != nil {
-		//	return err
-		//}
-		return nil
-	}
-}
-
-func (s Sheet1) Collection() [][]string {
-	return [][]string{
-		{
-			"001",
-			"张三",
-			"别人家的孩子",
-			"123456789",
-			"30",
-			"男",
-		},
-		{
-			"002",
-			"张四",
-			"淘气的孩子",
-			"987654321",
-			"31",
-			"男",
-		},
-	}
-}
+//func (s Sheet1) Title() string {
+//	return "车辆导入模板"
+//}
+//
+//func (s Sheet1) ColumnWidth() map[string]float64 {
+//	return map[string]float64{
+//		"A": 10,
+//		"B": 20,
+//		"C": 30,
+//		"D": 40,
+//		"E": 50,
+//		"F": 60,
+//	}
+//}
+//
+//func (s Sheet1) Style() extemplate.HandleSheetStyle {
+//	return func(f *excelize.File, style *exstyle.Style) error {
+//		//style.SetFont(
+//		//	exstyle.Bold(),
+//		//)
+//		//
+//		//style.SetAlign(
+//		//	exstyle.Horizontal("center"),
+//		//	exstyle.Vertical("center"),
+//		//	exstyle.WrapText(),
+//		//)
+//		//
+//		//err := style.ApplyStyle(f, s.Name, "A1", fmt.Sprintf("F%d", len(s.Collection())+1))
+//		//if err != nil {
+//		//	return err
+//		//}
+//		return nil
+//	}
+//}
+//
+//func (s Sheet1) MergeCell() map[string]string {
+//	return map[string]string{
+//		"E3": "F3",
+//	}
+//}
+//
+//func (s Sheet1) Header() []string {
+//	return []string{"ID", "姓名", "昵称", "手机号", "年龄", "性别"}
+//}
+//
+//func (s Sheet1) Collection() [][]string {
+//	return [][]string{
+//		{
+//			"001",
+//			"张三",
+//			"别人家的孩子",
+//			"123456789",
+//			"30",
+//			"男",
+//		},
+//		{
+//			"002",
+//			"张四",
+//			"淘气的孩子",
+//			"987654321",
+//			"31",
+//		},
+//	}
+//}
 
 func main() {
 	//rows, err := extemplate.LoadExcelByStruct[NameList]("./", "a.xlsx", "Sheet1", NameList{}, 1)
@@ -105,11 +108,8 @@ func main() {
 	exTemp3 := extemplate.Excel{
 		Name: "车辆导入模板" + DefaultExcelFileName, // 导出后的文件名
 		Sheets: []interface{}{
-			Sheet1{
+			extemplate.Sheet{
 				Name: "车辆导入模板",
-				MergeCell: map[string]string{ // 需要合并的单元格
-					"A1": "D3",
-				},
 			},
 		},
 		DefaultColWidth:  10, // 默认列宽

@@ -43,6 +43,12 @@ func (e *Excel) Export() error {
 		if err != nil {
 			return err
 		}
+
+		// 合并单元格
+		if err = e.setSheetMergeCell(s); err != nil {
+			return err
+		}
+
 		// 设置默认列宽
 		if err = e.setSheetColumnWidth(s); err != nil {
 			return err
@@ -71,8 +77,8 @@ func (e *Excel) newSheet(s interface{}, i int) (s1 Sheet, err error) {
 		s1.Name = s.(withTitle).Title()
 	}
 
-	if _, ok := s.(withHeading); ok {
-		s1.headers = s.(withHeading).Header()
+	if _, ok := s.(withMergeCell); ok {
+		s1.MergeCell = s.(withMergeCell).MergeCell()
 	}
 
 	if _, ok := s.(withColumnWidth); ok {
@@ -81,6 +87,10 @@ func (e *Excel) newSheet(s interface{}, i int) (s1 Sheet, err error) {
 
 	if _, ok := s.(withStyle); ok {
 		s1.styleHandle = s.(withStyle).Style()
+	}
+
+	if _, ok := s.(withHeading); ok {
+		s1.headers = s.(withHeading).Header()
 	}
 
 	if _, ok := s.(formCollection); ok {
@@ -111,6 +121,7 @@ func (e *Excel) newSheet(s interface{}, i int) (s1 Sheet, err error) {
 // getDefaultSheet 获取默认的工作表
 func (e *Excel) getDefaultSheet(s interface{}, i int) Sheet {
 	var s1 Sheet
+
 	if _, ok := s.(Sheet); ok {
 		s1 = s.(Sheet)
 	}
@@ -128,8 +139,21 @@ func (e *Excel) getDefaultSheet(s interface{}, i int) Sheet {
 	if e.DefaultRowHeight != 0 {
 		s1.DefaultRowHeight = e.DefaultRowHeight
 	}
-	s1.IsCustomHigh = false
 	return s1
+}
+
+// setSheetMergeCell 设置合并单元格
+func (e *Excel) setSheetMergeCell(s Sheet) error {
+	if len(s.MergeCell) == 0 {
+		return nil
+	}
+
+	for hCell, vCell := range s.MergeCell {
+		if err := e.f.MergeCell(s.Name, hCell, vCell); err != nil {
+			return errors.New(fmt.Sprintf("合并 %s:%s 失败：%s", hCell, vCell, err.Error()))
+		}
+	}
+	return nil
 }
 
 // setSheetColumnWidth 设置列宽
