@@ -10,14 +10,8 @@ type HandleSheetStyle func(f *excelize.File, s *exstyle.Style) error
 type Excel struct {
 	Name string
 
-	//DefaultFontSize   float64 // 默认字体大小
-	//DefaultFontFamily string  // 默认字体
-
 	DefaultColWidth  float64 // 默认列宽
 	DefaultRowHeight float64 // 默认行高
-
-	//DefaultVerticalAlign   string // 默认垂直对齐方式
-	//DefaultHorizontalAlign string // 默认水平对齐方式
 
 	Sheets []interface{} // 工作表
 
@@ -36,23 +30,13 @@ type ExcelTag struct {
 	Regexp   string
 }
 
-//type SheetInterface interface {
-//	formCollection
-//}
-
 type Sheet struct {
 	Index int    // 工作表索引
 	Name  string // 工作表名称
 
-	//DefaultFontSize   float64 // 默认字体大小
-	//DefaultFontFamily string  // 默认字体
-
 	DefaultColWidth  float64 // 默认列宽
 	DefaultRowHeight float64 // 默认行高
 	IsCustomHigh     bool    // 是否自定义行高
-
-	//DefaultVerticalAlign   string // 默认垂直对齐方式
-	//DefaultHorizontalAlign string // 默认水平对齐方式
 
 	MergeCell map[string]string // 需要合并的单元格(如：A1:D3)
 
@@ -63,26 +47,27 @@ type Sheet struct {
 	styleHandle HandleSheetStyle // 工作表样式
 }
 
-//func (s Sheet) Collection() [][]string {
-//	return [][]string{}
-//}
-
+// withHeading 表头
 type withHeading interface {
 	Header() []string
 }
 
-type WithTitle interface {
+// withTitle 工作表标题
+type withTitle interface {
 	Title() string
 }
 
+// withStyle 工作表样式
 type withStyle interface {
 	Style() HandleSheetStyle
 }
 
+// withColumnWidth 自定义列宽
 type withColumnWidth interface {
 	ColumnWidth() map[string]float64
 }
 
+// formCollection 表单数据
 type formCollection interface {
 	Collection() [][]string
 }

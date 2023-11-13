@@ -3,7 +3,7 @@ package extemplate
 import (
 	"errors"
 	"fmt"
-	exstyle "github.com/starme/go-excel/style"
+	"github.com/starme/go-excel/style"
 	"github.com/xuri/excelize/v2"
 	"os"
 	"path"
@@ -67,20 +67,15 @@ func (e *Excel) Export() error {
 func (e *Excel) newSheet(s interface{}, i int) (s1 Sheet, err error) {
 	s1 = e.getDefaultSheet(s, i)
 
-	fmt.Printf("%#v", s)
-
-	if _, ok := s.(WithTitle); ok {
-		fmt.Println(s.(WithTitle).Title())
-		s1.Name = s.(WithTitle).Title()
+	if _, ok := s.(withTitle); ok {
+		s1.Name = s.(withTitle).Title()
 	}
 
 	if _, ok := s.(withHeading); ok {
-		fmt.Println(s.(withHeading).Header())
 		s1.headers = s.(withHeading).Header()
 	}
 
 	if _, ok := s.(withColumnWidth); ok {
-		fmt.Println(s.(withColumnWidth).ColumnWidth())
 		s1.customWith = s.(withColumnWidth).ColumnWidth()
 	}
 
@@ -89,7 +84,6 @@ func (e *Excel) newSheet(s interface{}, i int) (s1 Sheet, err error) {
 	}
 
 	if _, ok := s.(formCollection); ok {
-		fmt.Println(s.(formCollection).Collection())
 		s1.rows = s.(formCollection).Collection()
 	}
 
@@ -145,7 +139,9 @@ func (e *Excel) setSheetColumnWidth(s Sheet) error {
 	}
 
 	for col, w := range s.customWith {
-		e.f.SetColWidth(s.Name, col, col, w)
+		if err := e.f.SetColWidth(s.Name, col, col, w); err != nil {
+			return errors.New(fmt.Sprintf("设置列宽失败：%s", err.Error()))
+		}
 	}
 	return nil
 }
