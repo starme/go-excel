@@ -155,7 +155,7 @@ func LoadHttpExcel(fh *multipart.FileHeader, sheetName string, colCount int) (ro
 		return
 	}
 
-	rows, err = reader.ReadSteam()
+	rows, err = reader.ReadStream()
 	return
 }
 
