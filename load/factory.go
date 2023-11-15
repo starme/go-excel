@@ -9,6 +9,7 @@ import (
 
 type Reader interface {
 	Read() (rows [][]string, err error)
+	ReadStream() (rows [][]string, err error)
 }
 
 const (
