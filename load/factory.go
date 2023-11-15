@@ -21,7 +21,7 @@ const (
 )
 
 // NewReaderStream 创建Reader
-func NewReaderStream(fh multipart.FileHeader, sheet string, colCount int) (r Reader, err error) {
+func NewReaderStream(fh *multipart.FileHeader, sheet string, colCount int) (r Reader, err error) {
 	file, err := fh.Open()
 	if err != nil {
 		return

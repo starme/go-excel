@@ -15,7 +15,7 @@ import (
 )
 
 // LoadHttpExcelByStruct 通过结构体解析上传的excel
-func LoadHttpExcelByStruct[T interface{}](fh multipart.FileHeader, sheetName string, data T, skipRows int) (rows []T, err error) {
+func LoadHttpExcelByStruct[T interface{}](fh *multipart.FileHeader, sheetName string, data T, skipRows int) (rows []T, err error) {
 	var tableHead, tableAlias []string
 	var exTagMap map[string]ExcelTag
 	tableHead, tableAlias, exTagMap, err = parseTag(data, 1)
@@ -149,7 +149,7 @@ func convertRowI(data string, tag ExcelTag) interface{} {
 }
 
 // LoadHttpExcel 读取上传的excel
-func LoadHttpExcel(fh multipart.FileHeader, sheetName string, colCount int) (rows [][]string, err error) {
+func LoadHttpExcel(fh *multipart.FileHeader, sheetName string, colCount int) (rows [][]string, err error) {
 	reader, err := exload.NewReaderStream(fh, sheetName, colCount)
 	if err != nil {
 		return
