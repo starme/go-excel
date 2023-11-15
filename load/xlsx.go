@@ -15,7 +15,7 @@ type excel struct {
 	colCount  int
 }
 
-func (e excel) ReadStream() (row [][]string, err error) {
+func (e excel) ReadStream() (rows [][]string, err error) {
 	var f *excelize.File
 	// 读取excel
 	f, err = excelize.OpenReader(e.file)

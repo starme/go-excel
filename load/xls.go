@@ -15,7 +15,7 @@ type excel2003 struct {
 	colCount  int
 }
 
-func (e excel2003) ReadStream() (row [][]string, err error) {
+func (e excel2003) ReadStream() (rows [][]string, err error) {
 	var open xls.Workbook
 	open, err = xls.OpenReader(e.file)
 	if err != nil {
