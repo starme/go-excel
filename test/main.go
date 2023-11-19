@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	extemplate "github.com/starme/go-excel/template"
 	"time"
+
+	extemplate "github.com/starme/go-excel/template"
 )
 
 var (
@@ -12,10 +13,11 @@ var (
 )
 
 type Person struct {
-	Name     string    `json:"name" ex:"column:姓名"`
-	Age      int       `json:"age" ex:"column:年龄;len:20"`
-	BirthDay time.Time `json:"birth_day" ex:"column:生日;format:01-02-06"`
-	//Alise    string    `json:"alise" ex:"column:别名;required;unique"`
+	Id   string `json:"id" ex:"column:ID"`
+	Name string `json:"name" ex:"column:姓名"`
+	// Age      int       `json:"age" ex:"column:年龄;len:20"`
+	// BirthDay time.Time `json:"birth_day" ex:"column:生日;format:01-02-06"`
+	// Alise string `json:"alise" ex:"column:别名;required;unique"`
 }
 
 type NameList Person
@@ -97,35 +99,35 @@ type User struct {
 //}
 
 func main() {
-	//rows, err := extemplate.LoadExcelByStruct[NameList]("./", "a.xlsx", "Sheet1", NameList{}, 1)
-	//if err != nil {
-	//	fmt.Println(err)
-	//}
-	//
-	//fmt.Println(rows)
+	rows, err := extemplate.LoadExcelByStruct[NameList]("./", "a.xlsx", "车辆导入模板", NameList{}, 1)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(rows)
 
 	//创建一个excelConfig（每个Excel文件需要一个）
-	exTemp3 := extemplate.Excel{
-		Name: "车辆导入模板" + DefaultExcelFileName, // 导出后的文件名
-		Sheets: []interface{}{
-			extemplate.Sheet{
-				Name: "车辆导入模板",
-			},
-		},
-		DefaultColWidth:  10, // 默认列宽
-		DefaultRowHeight: 20, // 默认行高（无效）
-	}
+	// exTemp3 := extemplate.Excel{
+	// 	Name: "车辆导入模板" + DefaultExcelFileName, // 导出后的文件名
+	// 	Sheets: []interface{}{
+	// 		extemplate.Sheet{
+	// 			Name: "车辆导入模板",
+	// 		},
+	// 	},
+	// 	DefaultColWidth:  10, // 默认列宽
+	// 	DefaultRowHeight: 20, // 默认行高（无效）
+	// }
 
-	err := exTemp3.Export()
-	if err != nil {
-		fmt.Printf("导出失败: %s", err.Error())
-		return
-	}
+	// err := exTemp3.Export()
+	// if err != nil {
+	// 	fmt.Printf("导出失败: %s", err.Error())
+	// 	return
+	// }
 
-	if err = exTemp3.ExportFile("./"); err != nil {
-		fmt.Printf("导出失败: %s", err.Error())
-		return
-	}
+	// if err = exTemp3.ExportFile("./"); err != nil {
+	// 	fmt.Printf("导出失败: %s", err.Error())
+	// 	return
+	// }
 
 	//// 获取Excel导入模板
 	//file, err := exTemp3.GetTemplateByStruct("车辆导入模板", user)
